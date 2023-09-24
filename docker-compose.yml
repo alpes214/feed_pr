@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  db_prod:
+    image: postgres:15
+    container_name: db_prod
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db_prod
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db_prod
+  web:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    command: bash -c "alembic upgrade head && PYTHONPATH=./app/ uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db_prod
+      - pgadmin
