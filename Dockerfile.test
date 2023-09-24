@@ -1,0 +1,22 @@
+# Pull base image
+FROM python:3.11
+
+# Set environment varibles
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /feed
+
+COPY ./tests /feed/tests
+COPY ./app /feed/app
+COPY .env_test /feed/.env
+COPY pytest.ini /feed/pytest.ini
+COPY alembic.ini /feed/alembic.ini
+RUN chmod +x /feed/tests/entrypoint.bash
+
+RUN pip install --no-cache-dir -r /feed/tests/requirements.txt
+
+# Install dependencies
+ENV PYTHONPATH "${PYTHONPATH}:/feed/"
+
+ENTRYPOINT [ "/feed/tests/entrypoint.bash" ]
